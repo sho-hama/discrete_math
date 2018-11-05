@@ -15,20 +15,21 @@ class Highway_advertisement # アルゴリズムを動作するにあたって�
     end
   end
 
-  def output_result
-    print "スコアの最大値: "
-    p @res_score
-    print "配置リスト: \n"
-    p @res_list
-  end
-
   def score_sum
     @res_list.each do |score|
       @res_score = @res_score + score if(score > 0)
     end
   end
 
-
+  def output_result
+    for i in 0 .. @res_list.length do
+      @res_list[i] = 0 if(@res_list[i]==-1)
+    end
+    p "スコアの最大値: "
+    p @res_score
+    p "配置リスト: "
+    p @res_list
+  end
 end
 
 class Hamana_algorithm1 < Highway_advertisement
@@ -70,7 +71,6 @@ class Hamana_algorithm1 < Highway_advertisement
     end
     return true
   end
-
 end
 
 class Higuchi_algorithm1 < Highway_advertisement
