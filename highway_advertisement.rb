@@ -25,9 +25,9 @@ class Highway_advertisement # アルゴリズムを動作するにあたって�
     for i in 0 .. @res_list.length do
       @res_list[i] = 0 if(@res_list[i]==-1)
     end
-    p "スコアの最大値: "
+    print "スコアの最大値:" 
     p @res_score
-    p "配置リスト: "
+    print "配置リスト:\n"
     p @res_list
   end
 end
