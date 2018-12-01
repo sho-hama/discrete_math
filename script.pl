@@ -34,7 +34,9 @@ for (1..$n) {
     }
     $i++;
   }
-  $board[$i] = int(rand $max); # 利益決定. 取る値は正のみ
+  my $pref = int(rand $max);
+  if($pref == 0){$pref = 1;} # 利益0は認めないため0の時は1とする by Hamana
+  $board[$i] = $pref;
 }
 
 # 座標
