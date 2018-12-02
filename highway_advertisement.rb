@@ -93,7 +93,7 @@ class Algorithm2 < Highway_advertisement
     less_than_equal5 = []
     # 座標5以下の点の中で最大の点をとりあえず採用
     for i in 0 .. @n-1 do
-      less_than_equal5.push(@r[i]) if(@x[i] <= 5)
+      less_than_equal5.push(@r[i]) if(@x[i] < 5)
     end
     for k in 0 .. @n-1 do
       if(@r[k] == less_than_equal5.max)
@@ -104,7 +104,7 @@ class Algorithm2 < Highway_advertisement
 
     # 座標5より上の点を見ていく
     for i in less_than_equal5.length .. @n-1 do
-     # p @res_list
+      #p @res_list
       # 自分より前の点で距離5以内に採用している点がなければ採用
       distance5_from_i_choiced = []
       for v in (0 .. i-1).reverse_each do
@@ -116,15 +116,28 @@ class Algorithm2 < Highway_advertisement
       elsif((@x[i] - @x[i-1]).abs >= 5) #5以上離れていたら採用
         # p "距離5以上"
         @res_list[i] = @r[i]
+      elsif((@x[i-1] - @x[i-2]).abs > 5) #1個前の点から距離5位内で点がなければどちらか大きい方
+        if (@r[i] >  @r[i-1])
+          for v in (0 .. i-2).reverse_each do
+            if((@x[i]-@x[v]).abs <5)
+              exist = true
+              break
+            end
+          end
+          if !exist
+            @res_list[i] = @r[i]
+            @res_list[i-1] = 0
+          end
+        end
       else #5以上離れていなかったら
        # p "距離5以内"
         for j in (0 .. i-1).reverse_each do
           break if((@x[i] - @x[j]) >= 5) #一番近くで5以上離れている点を見つける.
         end
-        # p "i="
-        # p i
-        # p "j="
-        # p j
+       #  p "i="
+       #  p i
+       #  p "j="
+       #  p j
         # 比較値1: 自分自身(i)+一番近くで5以上離れている点(j) - jから距離5以内かつiからは5以上離れている点で採用している点
         distance5_from_j_choiced =[]
         for v in 0 .. @n-1 do
@@ -144,13 +157,22 @@ class Algorithm2 < Highway_advertisement
         for k in j .. i-1 do
           compair_value2 += @res_list[k] if(@res_list[k] > 0)
         end
+        compair_value3 = @r[i]
         # これらを比較
         # p "com1"
         # p compair_value1
         # p "com2"
         # p compair_value2
-        
-        if(compair_value1 > compair_value2)
+        if(compair_value3 > compair_value1 && compair_value3 > compair_value2)
+          @res_list[i] = @r[i] #その点は採用する
+          if (i-j == 2)
+            @res_list[i-1] = 0
+          else
+            for k in j+1 .. i-1 do
+              @res_list[k] = 0 #間の点は全て不採用
+            end
+          end
+        elsif(compair_value1 > compair_value2)
           @res_list[i] = @r[i] #その点は採用する
           @res_list[j] = @r[j] #jも採用する
           if (i-j == 2)
