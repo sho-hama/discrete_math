@@ -93,7 +93,7 @@ class Algorithm2 < Highway_advertisement
     less_than_equal5 = []
     # 座標5以下の点の中で最大の点をとりあえず採用
     for i in 0 .. @n-1 do
-      less_than_equal5.push(@r[i]) if(@x[i] < 5)
+      less_than_equal5.push(@r[i]) if((@x[0] - @x[i]).abs <= 5)
     end
     for k in 0 .. @n-1 do
       if(@r[k] == less_than_equal5.max)
@@ -108,14 +108,20 @@ class Algorithm2 < Highway_advertisement
       # 自分より前の点で距離5以内に採用している点がなければ採用
       distance5_from_i_choiced = []
       for v in (0 .. i-1).reverse_each do
-          distance5_from_i_choiced.push(v) if((@x[i]-@x[v]).abs <5 && @res_list[v] > 0)
+        if((@x[i]-@x[v]).abs <5 && @res_list[v] > 0)
+          distance5_from_i_choiced.push(v)
+          break
+        end
+        if((@x[i]-@x[v]).abs >=5)
+          break
+        end
       end
       if(distance5_from_i_choiced.length == 0)
         # p "5以内採用なし"
         @res_list[i] = @r[i]
-      elsif((@x[i] - @x[i-1]).abs >= 5) #5以上離れていたら採用
-        # p "距離5以上"
-        @res_list[i] = @r[i]
+      # elsif((@x[i] - @x[i-1]).abs >= 5) #5以上離れていたら採用
+      #   # p "距離5以上"
+      #   @res_list[i] = @r[i]
       elsif((@x[i-1] - @x[i-2]).abs > 5) #1個前の点から距離5位内で点がなければどちらか大きい方
         if (@r[i] >  @r[i-1])
           for v in (0 .. i-2).reverse_each do
@@ -158,11 +164,11 @@ class Algorithm2 < Highway_advertisement
           compair_value2 += @res_list[k] if(@res_list[k] > 0)
         end
         compair_value3 = @r[i]
-        # これらを比較
         # p "com1"
         # p compair_value1
         # p "com2"
         # p compair_value2
+        # これらを比較
         if(compair_value3 > compair_value1 && compair_value3 > compair_value2)
           @res_list[i] = @r[i] #その点は採用する
           if (i-j == 2)
@@ -193,6 +199,68 @@ class Algorithm2 < Highway_advertisement
   end
 end
 
+
+
+class Algorithm3 < Highway_advertisement
+  def run_algorithm
+    w = []
+    w_sum = []
+    for i in 0 .. @n-1 do
+      @res_list.push(0) # 全部0で初期化
+    end
+    @res_list[0] = @r[0] #最初の要素は無条件で暫定採用
+    w[0] = Array.new(@n)
+    for i in 0..@n-1 do
+      w[0][i] = 0 if(i != 0)
+      w[0][0] = @r[i] if(i == 0)
+    end
+    #i番目の点を採用するとして,その時の最適採用パターンw[i]を求める
+    tmp = Array.new(@n)
+    for i in 1..@n-1 do
+      max = 0
+      for j in 0..@n-1 do
+        tmp[j] = 0 # 全部0で初期化
+      end
+      tmp[i] = @r[i]
+      # 連結する際はwとtmpを足せば良い?
+      if((@x[i] - @x[i-1]).abs < 5) 
+        # 5以上離れているwの中で最大のw_sumの時のw[j]を求める
+        index = nil
+        for j in (0..i-1).reverse_each do
+          if(@x[i] - @x[j] >= 5 && max < w[j].sum)
+            max = w[j].sum
+            index = j
+          end
+        end
+        # 5以上離れているw[j]が存在しなければ何もしない
+        if(index == nil)
+        #  p w
+          w.push(tmp.dup)
+        else # 5以上離れているw[j]が存在するなら最大のw[index]を連結
+          w.push(tmp.dup.zip(w[index]).map{|a, b| a+b})
+        end
+      else
+        # 5以上はなれていればその点は採用
+        # かつw[0]~w[i-1]の中で最大のwを連結
+        for j in (0..i-1).reverse_each do
+          if(max < w[j].sum)
+            max = w[j].sum
+            index = j
+          end
+        end
+        # 5以上離れているw[j]が存在するなら最大のw[index]を連結
+        w.push(tmp.dup.zip(w[index]).map{|a, b| a+b})
+      end
+
+      # @res_list[i] = max{@res_list[i-1], w[i]}
+      if(@res_list.sum < w[i].sum)
+        @res_list = w[i].dup
+      end
+      #p @res_list
+    end
+    self.score_sum
+  end
+end
 #データ読み取り
 $m = gets.chomp.to_i
 $n = gets.chomp.to_i
@@ -204,13 +272,23 @@ $r_str = gets.chomp.split(" ")
 #データの妥当性
 exit if($x_str.length != $n || $x_str.last.to_i > $m)
 
+# ダメなヒューリスティックアルゴリズム
 runner1 = Algorithm1.new
 runner1.run_algorithm
 runner1.output_result
 
+# マシなヒューリスティックアルゴリズム
 runner2 = Algorithm2.new
 runner2.run_algorithm
 runner2.output_result
 
+# 動的計画法
+# 恐らく完璧
+runner3 = Algorithm3.new
+runner3.run_algorithm
+runner3.output_result
 
 
+
+# dup忘れて大変な目に合った...
+# インスタンスの生成dup
